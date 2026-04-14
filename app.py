@@ -30,12 +30,13 @@ with st.sidebar:
     st.divider()
     page = st.radio("", ["📊 Overview","🔬 Data Explorer","🤖 Model Insights","💰 Savings Calculator","🔮 AI Simulator"], label_visibility="collapsed")
     st.divider()
-    uploaded = st.file_uploader("📁 Upload Master Dataset", type=['xlsx'])
-    if uploaded:
-        tmp = "hdgl_master.xlsx"
-        with open(tmp,'wb') as f: f.write(uploaded.getvalue())
-        st.session_state['fp'] = tmp
-        st.success("Dataset loaded!")
+   DATA_FILE = "master_dataset_with_annual_summary.xlsx"
+    if not os.path.exists(DATA_FILE):
+        import gdown
+        GDRIVE_ID = "1SWvL7NgHxV-ndtAEvxKQnOGU0yQ8XAtU"
+        gdown.download(f"https://drive.google.com/uc?id={GDRIVE_ID}", DATA_FILE, quiet=False)
+    st.session_state['fp'] = DATA_FILE
+    st.success("Dataset ready!")
     st.divider()
     st.markdown("<div style='text-align:center;opacity:.7;font-size:.75rem'>Model: Bi-GRU-LSTM<br>Deployed: 21 Mar 2025<br>Inference: Every 5 min</div>", unsafe_allow_html=True)
 
