@@ -24,37 +24,34 @@ h2{color:#2d4a7a!important}
 h3{color:#4a6fa5!important}
 </style>""", unsafe_allow_html=True)
 
+# ============================================================
+# AUTO-DOWNLOAD DATASET FROM GOOGLE DRIVE
+# ============================================================
+DATA_FILE = "master_dataset_with_annual_summary.xlsx"
+if not os.path.exists(DATA_FILE):
+    import gdown
+    GDRIVE_ID = "1SWvL7NgHxV-ndtAEvxKQnOGU0yQ8XAtU"
+    gdown.download(f"https://drive.google.com/uc?id={GDRIVE_ID}", DATA_FILE, quiet=False)
+
 with st.sidebar:
     st.markdown("## ⚡ HDGL Power\n## Optimization")
     st.caption("AI-Based Modelling Dashboard\nCRM-III, SAIL Bokaro Steel Plant")
     st.divider()
     page = st.radio("", ["📊 Overview","🔬 Data Explorer","🤖 Model Insights","💰 Savings Calculator","🔮 AI Simulator"], label_visibility="collapsed")
     st.divider()
-    uploaded = st.file_uploader("📁 Upload Master Dataset", type=['xlsx'])
-    if uploaded:
-        tmp = "/tmp/hdgl_master.xlsx"
-        with open(tmp,'wb') as f: f.write(uploaded.getvalue())
-        st.session_state['fp'] = tmp
-        st.success("Dataset loaded!")
-    st.divider()
     st.markdown("<div style='text-align:center;opacity:.7;font-size:.75rem'>Model: Bi-GRU-LSTM<br>Deployed: 21 Mar 2025<br>Inference: Every 5 min</div>", unsafe_allow_html=True)
 
 @st.cache_data(show_spinner="Loading dataset...")
-def load_data(fp):
-    pa=pd.read_excel(fp,sheet_name='Period_A_FY2425_Legacy')
-    pb=pd.read_excel(fp,sheet_name='Period_B_FY2526_AI_Model')
-    sa=pd.read_excel(fp,sheet_name='Daily_Summary_Period_A')
-    sb=pd.read_excel(fp,sheet_name='Daily_Summary_Period_B')
+def load_data():
+    pa=pd.read_excel(DATA_FILE,sheet_name='Period_A_FY2425_Legacy')
+    pb=pd.read_excel(DATA_FILE,sheet_name='Period_B_FY2526_AI_Model')
+    sa=pd.read_excel(DATA_FILE,sheet_name='Daily_Summary_Period_A')
+    sb=pd.read_excel(DATA_FILE,sheet_name='Daily_Summary_Period_B')
     pa['datetime']=pd.to_datetime(pa['mydate'],format='%d-%m-%Y %H:%M')
     pb['datetime']=pd.to_datetime(pb['mydate'],format='%d-%m-%Y %H:%M')
     return pa,pb,sa,sb
 
-fp=st.session_state.get('fp')
-if fp and os.path.exists(fp):
-    pa,pb,sa,sb=load_data(fp)
-else:
-    st.markdown("<div style='text-align:center;padding:80px 20px'><h1 style='font-size:2.5rem'>⚡ Power Consumption Optimization</h1><h3 style='color:#4a6fa5;font-weight:400'>using AI-Based Modelling at HDGL, CRM-III</h3><p style='font-size:1.1rem;color:#666;margin-top:30px'>Upload the Master Dataset using the sidebar to begin.</p></div>", unsafe_allow_html=True)
-    st.stop()
+pa,pb,sa,sb=load_data()
 
 pa_run=pa[pa['linespeed']>0]; pb_run=pb[pb['linespeed']>0]; pa_stp=pa[pa['linespeed']==0]
 sa_d=sa[sa['Sl.No.'].notna()].copy(); sb_d=sb[sb['Sl.No.'].notna()].copy()
